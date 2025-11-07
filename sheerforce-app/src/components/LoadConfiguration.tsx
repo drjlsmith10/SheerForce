@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Load, PointLoad, DistributedLoad, Beam } from '../types/beam';
+import type { Load, PointLoad, DistributedLoad, Beam } from '../types/beam';
 
 interface LoadConfigurationProps {
   beam: Beam;

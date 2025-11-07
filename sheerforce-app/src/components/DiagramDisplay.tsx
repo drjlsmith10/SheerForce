@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
-import { DiagramPoint } from '../types/beam';
+import type { DiagramPoint } from '../types/beam';
 
 interface DiagramDisplayProps {
   title: string;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Beam, Load, AnalysisResults } from './types/beam';
+import type { Beam, Load, AnalysisResults } from './types/beam';
 import { BeamInput } from './components/BeamInput';
 import { LoadConfiguration } from './components/LoadConfiguration';
 import { DiagramDisplay } from './components/DiagramDisplay';

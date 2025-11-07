@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Beam, Support } from '../types/beam';
+import type { Beam, Support } from '../types/beam';
 
 interface BeamInputProps {
   onBeamChange: (beam: Beam) => void;

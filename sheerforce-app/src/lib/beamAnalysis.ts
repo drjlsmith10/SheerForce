@@ -1,7 +1,7 @@
-import { Beam, Load, Reaction, AnalysisResults, DiagramPoint } from '../types/beam';
+import type { Beam, Reaction, AnalysisResults, DiagramPoint } from '../types/beam';
 import { create, all } from 'mathjs';
 
-const math = create(all);
+create(all);
 
 /**
  * Calculate reactions at supports for a simply supported beam
