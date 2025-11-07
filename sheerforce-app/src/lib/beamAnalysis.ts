@@ -34,10 +34,17 @@ function calculateSimplySupportedReactions(beam: Beam): Reaction[] {
       totalMoment += load.magnitude * (load.position - support1.position);
     } else if (load.type === 'distributed') {
       const loadLength = load.endPosition - load.startPosition;
-      const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
-      const totalLoad = avgMagnitude * loadLength;
-      const centroid = load.startPosition + loadLength / 2;
-      totalMoment += totalLoad * (centroid - support1.position);
+
+      // Guard against zero-length distributed loads
+      if (loadLength === 0) {
+        // Treat as point load at the position
+        totalMoment += load.startMagnitude * (load.startPosition - support1.position);
+      } else {
+        const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
+        const totalLoad = avgMagnitude * loadLength;
+        const centroid = load.startPosition + loadLength / 2;
+        totalMoment += totalLoad * (centroid - support1.position);
+      }
     } else if (load.type === 'moment') {
       totalMoment += load.direction === 'clockwise' ? -load.magnitude : load.magnitude;
     }
@@ -54,8 +61,15 @@ function calculateSimplySupportedReactions(beam: Beam): Reaction[] {
       totalVerticalLoad += load.magnitude * Math.cos(load.angle * Math.PI / 180);
     } else if (load.type === 'distributed') {
       const loadLength = load.endPosition - load.startPosition;
-      const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
-      totalVerticalLoad += avgMagnitude * loadLength;
+
+      // Guard against zero-length distributed loads
+      if (loadLength === 0) {
+        // Treat as point load
+        totalVerticalLoad += load.startMagnitude;
+      } else {
+        const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
+        totalVerticalLoad += avgMagnitude * loadLength;
+      }
     }
   });
 
@@ -105,13 +119,20 @@ export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramP
           shear -= load.magnitude * Math.cos(load.angle * Math.PI / 180);
         }
       } else if (load.type === 'distributed') {
-        if (x >= load.startPosition && x <= load.endPosition) {
+        const loadLength = load.endPosition - load.startPosition;
+
+        // Guard against zero-length distributed loads to prevent NaN
+        if (loadLength === 0) {
+          // Treat zero-length distributed load as a point load at the position
+          if (load.startPosition <= x) {
+            shear -= load.startMagnitude;
+          }
+        } else if (x >= load.startPosition && x <= load.endPosition) {
           const localX = x - load.startPosition;
           const magnitude = load.startMagnitude +
-            (load.endMagnitude - load.startMagnitude) * localX / (load.endPosition - load.startPosition);
+            (load.endMagnitude - load.startMagnitude) * localX / loadLength;
           shear -= magnitude * localX;
         } else if (x > load.endPosition) {
-          const loadLength = load.endPosition - load.startPosition;
           const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
           shear -= avgMagnitude * loadLength;
         }
@@ -150,7 +171,15 @@ export function calculateBendingMoment(beam: Beam, reactions: Reaction[]): Diagr
           moment -= load.magnitude * Math.cos(load.angle * Math.PI / 180) * (x - load.position);
         }
       } else if (load.type === 'distributed') {
-        if (x >= load.startPosition) {
+        const distributedLoadLength = load.endPosition - load.startPosition;
+
+        // Guard against zero-length distributed loads
+        if (distributedLoadLength === 0) {
+          // Treat as point load
+          if (load.startPosition <= x) {
+            moment -= load.startMagnitude * (x - load.startPosition);
+          }
+        } else if (x >= load.startPosition) {
           const end = Math.min(x, load.endPosition);
           const loadLength = end - load.startPosition;
           const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
