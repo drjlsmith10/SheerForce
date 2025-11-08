@@ -49,13 +49,13 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
   const lengthUnit = beam.units === 'metric' ? 'm' : 'ft';
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-1.5 rounded-md">
+    <div className="bg-white rounded-xl shadow-lg p-5 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-2 rounded-lg shadow-md">
           <svg
             className="text-white"
-            width="16"
-            height="16"
+            width="18"
+            height="18"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -64,7 +64,7 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
-        <h2 className="text-base font-bold text-gray-900">Load Configuration</h2>
+        <h2 className="text-lg font-bold text-gray-900">Load Configuration</h2>
       </div>
 
       <form onSubmit={handleAddLoad} className="space-y-4 mb-5">
@@ -75,7 +75,7 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
           <select
             value={loadType}
             onChange={(e) => setLoadType(e.target.value as 'point' | 'distributed')}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+            className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white transition-all"
           >
             <option value="point">Point Load</option>
             <option value="distributed">Distributed Load (Uniform)</option>
@@ -96,7 +96,8 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 min="0"
                 max={beam.length}
                 step="0.1"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Position along beam"
               />
             </div>
             <div>
@@ -110,13 +111,14 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 onChange={(e) => setMagnitude(parseFloat(e.target.value))}
                 min="0"
                 step="0.1"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Force magnitude"
               />
             </div>
           </>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="startPos" className="block text-sm font-semibold text-gray-700 mb-2">
                   Start ({lengthUnit})
@@ -129,7 +131,8 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                   min="0"
                   max={beam.length}
                   step="0.1"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="Start position"
                 />
               </div>
               <div>
@@ -144,7 +147,8 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                   min="0"
                   max={beam.length}
                   step="0.1"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="End position"
                 />
               </div>
             </div>
@@ -159,7 +163,8 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 onChange={(e) => setMagnitude(parseFloat(e.target.value))}
                 min="0"
                 step="0.1"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Load intensity"
               />
             </div>
           </>
@@ -167,12 +172,12 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg"
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
           <div className="flex items-center justify-center gap-2">
             <svg
-              width="16"
-              height="16"
+              width="18"
+              height="18"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -186,43 +191,45 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
       </form>
 
       {beam.loads.length > 0 && (
-        <div className="border-t border-gray-200 pt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              className="text-gray-600"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              style={{ display: 'block' }}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
+        <div className="border-t border-gray-200 pt-5 mt-1">
+          <div className="flex items-center gap-2 mb-3.5">
+            <div className="bg-purple-100 p-1.5 rounded-md">
+              <svg
+                className="text-purple-600"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                style={{ display: 'block' }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </div>
             <h3 className="text-sm font-bold text-gray-900">Applied Loads ({beam.loads.length})</h3>
           </div>
           <div className="space-y-2.5">
             {beam.loads.map((load, idx) => (
               <div
                 key={load.id}
-                className="flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-200"
+                className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 p-3.5 rounded-xl border border-purple-200 hover:shadow-md transition-all duration-200"
               >
-                <div className="flex items-start gap-2.5 flex-1">
-                  <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                <div className="flex items-start gap-3 flex-1 mb-2 sm:mb-0">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-md">
                     {idx + 1}
                   </div>
                   <div className="text-sm">
                     {load.type === 'point' ? (
                       <div>
-                        <p className="font-bold text-purple-900 mb-0.5">Point Load</p>
-                        <p className="text-gray-700">
+                        <p className="font-bold text-purple-900 mb-1">Point Load</p>
+                        <p className="text-gray-700 leading-relaxed">
                           <strong>{load.magnitude} {unitLabel}</strong> at <strong>{load.position} {lengthUnit}</strong>
                         </p>
                       </div>
                     ) : load.type === 'distributed' ? (
                       <div>
-                        <p className="font-bold text-purple-900 mb-0.5">Distributed Load</p>
-                        <p className="text-gray-700">
+                        <p className="font-bold text-purple-900 mb-1">Distributed Load</p>
+                        <p className="text-gray-700 leading-relaxed">
                           <strong>{load.startMagnitude} {distributedUnitLabel}</strong> from <strong>{load.startPosition}</strong> to <strong>{load.endPosition} {lengthUnit}</strong>
                         </p>
                       </div>
@@ -231,7 +238,7 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 </div>
                 <button
                   onClick={() => handleRemoveLoad(load.id)}
-                  className="ml-3 bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex-shrink-0"
+                  className="sm:ml-3 self-end sm:self-center bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 px-4 py-2 rounded-lg font-semibold text-xs transition-all duration-200 flex-shrink-0 shadow-sm hover:shadow"
                 >
                   Remove
                 </button>

@@ -47,16 +47,16 @@ function App() {
   const momentUnit = beam?.units === 'metric' ? 'kN·m' : 'kip·ft';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-6 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center gap-3 mb-2">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-lg shadow-md">
+        <header className="text-center mb-8 md:mb-10">
+          <div className="inline-flex items-center justify-center gap-3 mb-3">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
               <svg
                 className="text-white"
-                width="24"
-                height="24"
+                width="28"
+                height="28"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -70,17 +70,17 @@ function App() {
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
               SheerForce
             </h1>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
             Professional Shear Force & Bending Moment Calculator
           </p>
-        </div>
+        </header>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-6 md:mb-8">
           {/* Left Column - Input */}
           <div className="space-y-5">
             <BeamInput onBeamChange={handleBeamChange} />
@@ -95,12 +95,12 @@ function App() {
             {beam && beam.loads.length > 0 && (
               <button
                 onClick={handleCalculate}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-bold text-base shadow-md hover:shadow-lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-bold text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2.5">
                   <svg
-                    width="18"
-                    height="18"
+                    width="20"
+                    height="20"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -137,13 +137,13 @@ function App() {
             {results && (
               <>
                 {/* Reactions Summary */}
-                <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-1.5 rounded-md">
+                <div className="bg-white rounded-xl shadow-lg p-5 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-2 rounded-lg shadow-md">
                       <svg
                         className="text-white"
-                        width="16"
-                        height="16"
+                        width="18"
+                        height="18"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -152,23 +152,23 @@ function App() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <h2 className="text-base font-bold text-gray-900">Support Reactions</h2>
+                    <h2 className="text-lg font-bold text-gray-900">Support Reactions</h2>
                   </div>
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {results.reactions.map((reaction, idx) => (
-                      <div key={reaction.supportId} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <div key={reaction.supportId} className="bg-gradient-to-r from-gray-50 to-slate-50 p-3.5 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">
                               {idx + 1}
                             </div>
                             <span className="text-sm font-bold text-gray-900">Support {idx + 1}</span>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs text-gray-600 mb-0.5">
+                            <p className="text-xs text-gray-600 mb-1">
                               Position: {reaction.position.toFixed(2)} {unitLabel}
                             </p>
-                            <p className="text-sm font-bold text-gray-900">
+                            <p className="text-base font-bold text-gray-900">
                               {reaction.verticalForce.toFixed(2)} {forceUnit}
                             </p>
                           </div>
@@ -177,22 +177,22 @@ function App() {
                     ))}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-2 gap-3">
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                      <p className="text-xs font-bold text-blue-900 mb-1">Max Shear</p>
-                      <p className="text-lg font-bold text-blue-700">
-                        {Math.abs(results.maxShear.value).toFixed(2)} {forceUnit}
+                  <div className="mt-5 pt-5 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
+                      <p className="text-xs font-bold text-blue-900 mb-1.5 uppercase tracking-wide">Max Shear</p>
+                      <p className="text-2xl font-bold text-blue-700 mb-1">
+                        {Math.abs(results.maxShear.value).toFixed(2)} <span className="text-base">{forceUnit}</span>
                       </p>
-                      <p className="text-xs text-blue-600 mt-0.5">
+                      <p className="text-xs text-blue-600">
                         at x = {results.maxShear.position.toFixed(2)} {unitLabel}
                       </p>
                     </div>
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                      <p className="text-xs font-bold text-purple-900 mb-1">Max Moment</p>
-                      <p className="text-lg font-bold text-purple-700">
-                        {Math.abs(results.maxMoment.value).toFixed(2)} {momentUnit}
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition-all duration-200">
+                      <p className="text-xs font-bold text-purple-900 mb-1.5 uppercase tracking-wide">Max Moment</p>
+                      <p className="text-2xl font-bold text-purple-700 mb-1">
+                        {Math.abs(results.maxMoment.value).toFixed(2)} <span className="text-base">{momentUnit}</span>
                       </p>
-                      <p className="text-xs text-purple-600 mt-0.5">
+                      <p className="text-xs text-purple-600">
                         at x = {results.maxMoment.position.toFixed(2)} {unitLabel}
                       </p>
                     </div>
@@ -205,7 +205,7 @@ function App() {
 
         {/* Diagrams - Full Width */}
         {results && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fadeIn">
             <DiagramDisplay
               title="Shear Force Diagram"
               data={results.shearForce}
@@ -222,11 +222,14 @@ function App() {
         )}
 
         {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
-            Built with React + TypeScript + Vite + Plotly.js
-          </p>
-        </div>
+        <footer className="mt-10 md:mt-12 text-center">
+          <div className="inline-flex items-center gap-2 text-xs text-gray-500 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style={{ display: 'block' }}>
+              <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            <span>Built with React + TypeScript + Vite + Plotly.js</span>
+          </div>
+        </footer>
       </div>
     </div>
   );
