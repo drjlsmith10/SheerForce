@@ -31,40 +31,40 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
     const layout = {
       title: {
         text: title,
-        font: { size: 18, family: 'system-ui, sans-serif', color: '#1f2937' },
+        font: { size: 16, family: 'system-ui, sans-serif', color: '#1f2937' },
       },
       xaxis: {
         title: {
           text: 'Position (m)',
-          font: { size: 13, color: '#4b5563', family: 'system-ui, sans-serif' }
+          font: { size: 12, color: '#4b5563', family: 'system-ui, sans-serif' }
         },
         gridcolor: '#e5e7eb',
         zeroline: true,
         zerolinecolor: '#6b7280',
-        zerolinewidth: 2.5,
+        zerolinewidth: 2,
         linecolor: '#d1d5db',
-        linewidth: 1.5,
+        linewidth: 1,
       },
       yaxis: {
         title: {
           text: yAxisLabel,
-          font: { size: 13, color: '#4b5563', family: 'system-ui, sans-serif' }
+          font: { size: 12, color: '#4b5563', family: 'system-ui, sans-serif' }
         },
         gridcolor: '#e5e7eb',
         zeroline: true,
         zerolinecolor: '#6b7280',
-        zerolinewidth: 2.5,
+        zerolinewidth: 2,
         linecolor: '#d1d5db',
-        linewidth: 1.5,
+        linewidth: 1,
       },
-      margin: { l: 70, r: 30, t: 60, b: 60 },
+      margin: { l: 60, r: 20, t: 50, b: 50 },
       paper_bgcolor: 'white',
       plot_bgcolor: '#f9fafb',
       hovermode: 'closest',
       hoverlabel: {
         bgcolor: '#1f2937',
         bordercolor: color,
-        font: { size: 12, color: 'white', family: 'system-ui, sans-serif' }
+        font: { size: 11, color: 'white', family: 'system-ui, sans-serif' }
       },
     } as const;
 
@@ -85,8 +85,8 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
   }, [data, title, yAxisLabel, color]);
 
   return (
-    <div className="w-full bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-      <div ref={plotRef} className="w-full h-96" />
+    <div className="w-full bg-white rounded-lg shadow-md p-4 border border-gray-200">
+      <div ref={plotRef} className="w-full h-80" />
     </div>
   );
 }
