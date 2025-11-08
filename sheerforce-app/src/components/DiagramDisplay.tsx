@@ -20,34 +20,54 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
       y: data.map(p => p.value),
       type: 'scatter',
       mode: 'lines',
-      line: { color, width: 2 },
+      line: {
+        color,
+        width: 3,
+        shape: 'spline',
+        smoothing: 0.3
+      },
       fill: 'tozeroy',
-      fillcolor: color + '20',
+      fillcolor: color + '25',
     } as const;
 
     const layout = {
       title: {
         text: title,
-        font: { size: 16, family: 'system-ui, sans-serif' },
+        font: { size: 18, family: 'system-ui, sans-serif', weight: 700, color: '#1f2937' },
       },
       xaxis: {
-        title: 'Position (m)',
+        title: {
+          text: 'Position (m)',
+          font: { size: 13, weight: 600, color: '#4b5563' }
+        },
         gridcolor: '#e5e7eb',
         zeroline: true,
-        zerolinecolor: '#9ca3af',
-        zerolinewidth: 2,
+        zerolinecolor: '#6b7280',
+        zerolinewidth: 2.5,
+        linecolor: '#d1d5db',
+        linewidth: 1.5,
       },
       yaxis: {
-        title: yAxisLabel,
+        title: {
+          text: yAxisLabel,
+          font: { size: 13, weight: 600, color: '#4b5563' }
+        },
         gridcolor: '#e5e7eb',
         zeroline: true,
-        zerolinecolor: '#9ca3af',
-        zerolinewidth: 2,
+        zerolinecolor: '#6b7280',
+        zerolinewidth: 2.5,
+        linecolor: '#d1d5db',
+        linewidth: 1.5,
       },
-      margin: { l: 60, r: 30, t: 50, b: 50 },
+      margin: { l: 70, r: 30, t: 60, b: 60 },
       paper_bgcolor: 'white',
-      plot_bgcolor: '#fafafa',
+      plot_bgcolor: '#f9fafb',
       hovermode: 'closest',
+      hoverlabel: {
+        bgcolor: '#1f2937',
+        bordercolor: color,
+        font: { size: 12, color: 'white', family: 'system-ui, sans-serif' }
+      },
     } as const;
 
     const config = {
@@ -67,7 +87,7 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
   }, [data, title, yAxisLabel, color]);
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-4">
+    <div className="w-full bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
       <div ref={plotRef} className="w-full h-96" />
     </div>
   );

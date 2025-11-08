@@ -47,15 +47,35 @@ function App() {
   const momentUnit = beam?.units === 'metric' ? 'kN·m' : 'kip·ft';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center mb-4">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-4 rounded-2xl shadow-lg">
+              <svg
+                className="w-12 h-12 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+          </div>
+          <h1 className="text-5xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             SheerForce
           </h1>
-          <p className="text-lg text-gray-600">
-            Shear Force & Bending Moment Diagram Calculator
+          <p className="text-xl text-gray-600 font-medium">
+            Professional Shear Force & Bending Moment Calculator
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Analyze beams with precision and visualize structural behavior
           </p>
         </div>
 
@@ -75,15 +95,25 @@ function App() {
             {beam && beam.loads.length > 0 && (
               <button
                 onClick={handleCalculate}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg shadow-md"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                Calculate Diagrams
+                <div className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span>Calculate Diagrams</span>
+                </div>
               </button>
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800 font-medium">{error}</p>
+              <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-red-800 font-medium">{error}</p>
+                </div>
               </div>
             )}
           </div>
@@ -93,31 +123,55 @@ function App() {
             {results && (
               <>
                 {/* Reactions Summary */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800">Support Reactions</h2>
+                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-5">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-2 rounded-lg">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">Support Reactions</h2>
+                  </div>
                   <div className="space-y-3">
                     {results.reactions.map((reaction, idx) => (
-                      <div key={reaction.supportId} className="bg-gray-50 p-3 rounded-md border border-gray-200">
-                        <p className="font-medium text-gray-900">Support {idx + 1}</p>
-                        <p className="text-sm text-gray-600">
-                          Position: {reaction.position.toFixed(2)} {unitLabel}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Vertical Force: {reaction.verticalForce.toFixed(2)} {forceUnit}
-                        </p>
+                      <div key={reaction.supportId} className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            {idx + 1}
+                          </div>
+                          <p className="font-semibold text-gray-900">Support {idx + 1}</p>
+                        </div>
+                        <div className="ml-10 space-y-1">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">Position:</span> {reaction.position.toFixed(2)} {unitLabel}
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">Reaction:</span> {reaction.verticalForce.toFixed(2)} {forceUnit}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-sm text-gray-600">
-                      <strong>Max Shear:</strong> {Math.abs(results.maxShear.value).toFixed(2)} {forceUnit} at{' '}
-                      {results.maxShear.position.toFixed(2)} {unitLabel}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Max Moment:</strong> {Math.abs(results.maxMoment.value).toFixed(2)} {momentUnit} at{' '}
-                      {results.maxMoment.position.toFixed(2)} {unitLabel}
-                    </p>
+                  <div className="mt-5 pt-5 border-t-2 border-gray-200 space-y-3">
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">Maximum Shear Force</p>
+                      <p className="text-lg font-bold text-blue-700">
+                        {Math.abs(results.maxShear.value).toFixed(2)} {forceUnit}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        at x = {results.maxShear.position.toFixed(2)} {unitLabel}
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                      <p className="text-sm font-semibold text-purple-900 mb-1">Maximum Bending Moment</p>
+                      <p className="text-lg font-bold text-purple-700">
+                        {Math.abs(results.maxMoment.value).toFixed(2)} {momentUnit}
+                      </p>
+                      <p className="text-xs text-purple-600">
+                        at x = {results.maxMoment.position.toFixed(2)} {unitLabel}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </>
@@ -144,8 +198,12 @@ function App() {
         )}
 
         {/* Footer */}
-        <div className="mt-8 text-center text-gray-600 text-sm">
-          <p>Built with React + TypeScript + Vite + Plotly.js</p>
+        <div className="mt-12 text-center">
+          <div className="inline-block bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-sm border border-gray-200">
+            <p className="text-sm text-gray-600">
+              Built with <span className="font-semibold text-blue-600">React</span> + <span className="font-semibold text-blue-600">TypeScript</span> + <span className="font-semibold text-blue-600">Vite</span> + <span className="font-semibold text-blue-600">Plotly.js</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
