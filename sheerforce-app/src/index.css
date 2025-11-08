@@ -18,6 +18,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  .dark {
+    color-scheme: dark;
+    color: #f9fafb;
+    background-color: #111827;
+  }
+
   body {
     margin: 0;
     padding: 0;

@@ -1,7 +1,38 @@
 import type { Beam, Reaction, AnalysisResults, DiagramPoint } from '../types/beam';
-import { create, all } from 'mathjs';
 
-create(all);
+/**
+ * Calculate moment of inertia for the cross-section
+ */
+function calculateMomentOfInertia(crossSection: Beam['crossSection']): number {
+  const { type, dimensions } = crossSection;
+  switch (type) {
+    case 'rectangular': {
+      return (dimensions.width * Math.pow(dimensions.height, 3)) / 12;
+    }
+    case 'circular': {
+      return (Math.PI * Math.pow(dimensions.diameter, 4)) / 64;
+    }
+    case 'I-beam': {
+      // Approximate I for I-beam: I = (b*h^3 - b_web*h_web^3)/12
+      const b = dimensions.width;
+      const h = dimensions.height;
+      const b_web = dimensions.webThickness;
+      const h_web = dimensions.height - 2 * dimensions.flangeThickness;
+      return (b * Math.pow(h, 3) - b_web * Math.pow(h_web, 3)) / 12;
+    }
+    case 'T-beam': {
+      // Similar approximation
+      const b_t = dimensions.width;
+      const h_t = dimensions.height;
+      const b_web_t = dimensions.webThickness;
+      const h_web_t = dimensions.height - dimensions.flangeThickness;
+      return (b_t * Math.pow(h_t, 3) - b_web_t * Math.pow(h_web_t, 3)) / 12;
+    }
+    default: {
+      return 1; // Default
+    }
+  }
+}
 
 /**
  * Calculate reactions at supports for a simply supported beam
@@ -119,22 +150,24 @@ export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramP
           shear -= load.magnitude * Math.cos(load.angle * Math.PI / 180);
         }
       } else if (load.type === 'distributed') {
-        const loadLength = load.endPosition - load.startPosition;
+        const a = load.startPosition;
+        const b = load.endPosition;
+        const w1 = load.startMagnitude;
+        const w2 = load.endMagnitude;
+        const loadLength = b - a;
 
-        // Guard against zero-length distributed loads to prevent NaN
         if (loadLength === 0) {
-          // Treat zero-length distributed load as a point load at the position
-          if (load.startPosition <= x) {
-            shear -= load.startMagnitude;
+          if (a <= x) {
+            shear -= w1;
           }
-        } else if (x >= load.startPosition && x <= load.endPosition) {
-          const localX = x - load.startPosition;
-          const magnitude = load.startMagnitude +
-            (load.endMagnitude - load.startMagnitude) * localX / loadLength;
-          shear -= magnitude * localX;
-        } else if (x > load.endPosition) {
-          const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
-          shear -= avgMagnitude * loadLength;
+        } else if (x >= b) {
+          const avg = (w1 + w2) / 2;
+          shear -= avg * loadLength;
+        } else if (x >= a) {
+          const remainingLength = b - x;
+          const w_at_x = w1 + (w2 - w1) * (x - a) / loadLength;
+          const avg_remaining = (w_at_x + w2) / 2;
+          shear -= avg_remaining * remainingLength;
         }
       }
     });
@@ -201,12 +234,77 @@ export function calculateBendingMoment(beam: Beam, reactions: Reaction[]): Diagr
 }
 
 /**
+ * Calculate deflection using integration of moment-curvature
+ */
+function calculateDeflection(beam: Beam, bendingMoment: DiagramPoint[]): DiagramPoint[] {
+  const E = beam.material.modulusOfElasticity;
+  const I = calculateMomentOfInertia(beam.crossSection);
+  const EI = E * I;
+
+  const points: DiagramPoint[] = [];
+  const numPoints = bendingMoment.length;
+
+  // Integrate M/EI twice to get deflection
+  // y'' = M/EI
+  // y' = integral y'' dx
+  // y = integral y' dx
+
+  // Use numerical integration (trapezoidal rule)
+  const curvature: number[] = bendingMoment.map(p => p.value / EI);
+  const slope: number[] = [];
+  const deflection: number[] = [];
+
+  // Integrate curvature to get slope
+  slope[0] = 0; // Assume slope = 0 at x=0 for simply supported
+  for (let i = 1; i < numPoints; i++) {
+    const dx = bendingMoment[i].position - bendingMoment[i-1].position;
+    slope[i] = slope[i-1] + (curvature[i-1] + curvature[i]) / 2 * dx;
+  }
+
+  // Apply boundary condition: slope = 0 at supports
+  const supportPositions = beam.supports.map(s => s.position);
+  // For simply supported, set slope = 0 at both supports
+  if (supportPositions.length >= 2) {
+    const idx1 = Math.round(supportPositions[0] / beam.length * (numPoints - 1));
+    const idx2 = Math.round(supportPositions[1] / beam.length * (numPoints - 1));
+    const slope_correction = (slope[idx2] - slope[idx1]) / (supportPositions[1] - supportPositions[0]);
+    for (let i = 0; i < numPoints; i++) {
+      slope[i] -= slope_correction * (bendingMoment[i].position - supportPositions[0]);
+    }
+  }
+
+  // Integrate slope to get deflection
+  deflection[0] = 0; // Deflection = 0 at x=0
+  for (let i = 1; i < numPoints; i++) {
+    const dx = bendingMoment[i].position - bendingMoment[i-1].position;
+    deflection[i] = deflection[i-1] + (slope[i-1] + slope[i]) / 2 * dx;
+  }
+
+  // Apply boundary condition: deflection = 0 at supports
+  if (supportPositions.length >= 2) {
+    const idx1 = Math.round(supportPositions[0] / beam.length * (numPoints - 1));
+    const idx2 = Math.round(supportPositions[1] / beam.length * (numPoints - 1));
+    const deflection_correction = (deflection[idx2] - deflection[idx1]) / (supportPositions[1] - supportPositions[0]);
+    for (let i = 0; i < numPoints; i++) {
+      deflection[i] -= deflection_correction * (bendingMoment[i].position - supportPositions[0]);
+    }
+  }
+
+  for (let i = 0; i < numPoints; i++) {
+    points.push({ position: bendingMoment[i].position, value: deflection[i] });
+  }
+
+  return points;
+}
+
+/**
  * Perform complete beam analysis
  */
 export function analyzeBeam(beam: Beam): AnalysisResults {
   const reactions = calculateReactions(beam);
   const shearForce = calculateShearForce(beam, reactions);
   const bendingMoment = calculateBendingMoment(beam, reactions);
+  const deflection = calculateDeflection(beam, bendingMoment);
 
   // Find maximum values
   const maxShear = shearForce.reduce((max, point) =>
@@ -217,11 +315,17 @@ export function analyzeBeam(beam: Beam): AnalysisResults {
     Math.abs(point.value) > Math.abs(max.value) ? point : max
   );
 
+  const maxDeflection = deflection.reduce((max, point) =>
+    Math.abs(point.value) > Math.abs(max.value) ? point : max
+  );
+
   return {
     reactions,
     shearForce,
     bendingMoment,
+    deflection,
     maxShear,
     maxMoment,
+    maxDeflection,
   };
 }

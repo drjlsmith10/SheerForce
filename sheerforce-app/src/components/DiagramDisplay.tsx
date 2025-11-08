@@ -77,16 +77,17 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
 
     Plotly.newPlot(plotRef.current, [trace], layout, config);
 
+    const currentRef = plotRef.current;
     return () => {
-      if (plotRef.current) {
-        Plotly.purge(plotRef.current);
+      if (currentRef) {
+        Plotly.purge(currentRef);
       }
     };
   }, [data, title, yAxisLabel, color]);
 
   return (
-    <div className="w-full bg-white rounded-xl shadow-lg p-5 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-      <div ref={plotRef} className="w-full h-80 md:h-96" />
+    <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-5 md:p-6 border border-gray-100 dark:border-gray-700">
+      <div ref={plotRef} className="w-full h-96 md:h-80 lg:h-96" />
     </div>
   );
 }

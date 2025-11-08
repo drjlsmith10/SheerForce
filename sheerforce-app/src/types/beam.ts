@@ -36,12 +36,28 @@ export interface MomentLoad {
 
 export type Load = PointLoad | DistributedLoad | MomentLoad;
 
+export interface CrossSection {
+  type: 'I-beam' | 'rectangular' | 'circular' | 'T-beam';
+  dimensions: { [key: string]: number };
+  label: string;
+}
+
+export interface MaterialProperties {
+  name: string;
+  type: 'steel' | 'concrete' | 'wood' | 'aluminum';
+  modulusOfElasticity: number; // E in Pa or psi
+  yieldStrength?: number;
+  density?: number;
+}
+
 export interface Beam {
   id: string;
   length: number;
   supports: Support[];
   loads: Load[];
   units: 'metric' | 'imperial';
+  material: MaterialProperties;
+  crossSection: CrossSection;
 }
 
 export interface Reaction {
@@ -61,8 +77,10 @@ export interface AnalysisResults {
   reactions: Reaction[];
   shearForce: DiagramPoint[];
   bendingMoment: DiagramPoint[];
+  deflection?: DiagramPoint[];
   maxShear: { position: number; value: number };
   maxMoment: { position: number; value: number };
+  maxDeflection?: { position: number; value: number };
 }
 
 export interface BeamState extends Beam {
