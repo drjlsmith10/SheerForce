@@ -209,12 +209,14 @@ function App() {
             <DiagramDisplay
               title="Shear Force Diagram"
               data={results.shearForce}
+              xAxisLabel={`Position (${unitLabel})`}
               yAxisLabel={`Shear Force (${forceUnit})`}
               color="#3b82f6"
             />
             <DiagramDisplay
               title="Bending Moment Diagram"
               data={results.bendingMoment}
+              xAxisLabel={`Position (${unitLabel})`}
               yAxisLabel={`Bending Moment (${momentUnit})`}
               color="#8b5cf6"
             />

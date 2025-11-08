@@ -9,8 +9,19 @@ export function BeamInput({ onBeamChange }: BeamInputProps) {
   const [length, setLength] = useState(10);
   const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
 
+  const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setLength(value);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isNaN(length) || length <= 0) {
+      return;
+    }
 
     // Create a simply supported beam with default supports
     const supports: Support[] = [
@@ -65,9 +76,10 @@ export function BeamInput({ onBeamChange }: BeamInputProps) {
               type="number"
               id="length"
               value={length}
-              onChange={(e) => setLength(parseFloat(e.target.value))}
+              onChange={handleLengthChange}
               min="0.1"
               step="0.1"
+              required
               className="flex-1 px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Enter beam length"
             />

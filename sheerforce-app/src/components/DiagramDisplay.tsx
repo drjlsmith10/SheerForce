@@ -5,15 +5,18 @@ import type { DiagramPoint } from '../types/beam';
 interface DiagramDisplayProps {
   title: string;
   data: DiagramPoint[];
+  xAxisLabel: string;
   yAxisLabel: string;
   color?: string;
 }
 
-export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: DiagramDisplayProps) {
+export function DiagramDisplay({ title, data, xAxisLabel, yAxisLabel, color = '#3b82f6' }: DiagramDisplayProps) {
   const plotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!plotRef.current || data.length === 0) return;
+
+    const plotElement = plotRef.current;
 
     const trace = {
       x: data.map(p => p.position),
@@ -35,7 +38,7 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
       },
       xaxis: {
         title: {
-          text: 'Position (m)',
+          text: xAxisLabel,
           font: { size: 13, color: '#4b5563', family: 'Inter, system-ui, sans-serif', weight: 600 }
         },
         gridcolor: '#e5e7eb',
@@ -75,14 +78,12 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
       modeBarButtonsToRemove: ['lasso2d', 'select2d'],
     } as const;
 
-    Plotly.newPlot(plotRef.current, [trace], layout, config);
+    Plotly.newPlot(plotElement, [trace], layout, config);
 
     return () => {
-      if (plotRef.current) {
-        Plotly.purge(plotRef.current);
-      }
+      Plotly.purge(plotElement);
     };
-  }, [data, title, yAxisLabel, color]);
+  }, [data, title, xAxisLabel, yAxisLabel, color]);
 
   return (
     <div className="w-full bg-white rounded-xl shadow-lg p-5 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">

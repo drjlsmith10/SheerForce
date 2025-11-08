@@ -13,12 +13,47 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
   const [startPosition, setStartPosition] = useState(0);
   const [endPosition, setEndPosition] = useState(beam.length);
 
+  const handlePositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+      setPosition(value);
+    }
+  };
+
+  const handleMagnitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value >= 0) {
+      setMagnitude(value);
+    }
+  };
+
+  const handleStartPositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+      setStartPosition(value);
+    }
+  };
+
+  const handleEndPositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+      setEndPosition(value);
+    }
+  };
+
   const handleAddLoad = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate inputs
+    if (isNaN(magnitude) || magnitude <= 0) {
+      return;
+    }
 
     let newLoad: Load;
 
     if (loadType === 'point') {
+      if (isNaN(position)) return;
+
       newLoad = {
         id: `load-${Date.now()}`,
         type: 'point',
@@ -27,6 +62,9 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
         angle: 0, // Vertical downward
       } as PointLoad;
     } else {
+      if (isNaN(startPosition) || isNaN(endPosition)) return;
+      if (startPosition >= endPosition) return;
+
       newLoad = {
         id: `load-${Date.now()}`,
         type: 'distributed',
@@ -92,10 +130,11 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 type="number"
                 id="position"
                 value={position}
-                onChange={(e) => setPosition(parseFloat(e.target.value))}
+                onChange={handlePositionChange}
                 min="0"
                 max={beam.length}
                 step="0.1"
+                required
                 className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 placeholder="Position along beam"
               />
@@ -108,9 +147,10 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 type="number"
                 id="magnitude"
                 value={magnitude}
-                onChange={(e) => setMagnitude(parseFloat(e.target.value))}
+                onChange={handleMagnitudeChange}
                 min="0"
                 step="0.1"
+                required
                 className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 placeholder="Force magnitude"
               />
@@ -127,10 +167,11 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                   type="number"
                   id="startPos"
                   value={startPosition}
-                  onChange={(e) => setStartPosition(parseFloat(e.target.value))}
+                  onChange={handleStartPositionChange}
                   min="0"
                   max={beam.length}
                   step="0.1"
+                  required
                   className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   placeholder="Start position"
                 />
@@ -143,10 +184,11 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                   type="number"
                   id="endPos"
                   value={endPosition}
-                  onChange={(e) => setEndPosition(parseFloat(e.target.value))}
+                  onChange={handleEndPositionChange}
                   min="0"
                   max={beam.length}
                   step="0.1"
+                  required
                   className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   placeholder="End position"
                 />
@@ -160,9 +202,10 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 type="number"
                 id="distMag"
                 value={magnitude}
-                onChange={(e) => setMagnitude(parseFloat(e.target.value))}
+                onChange={handleMagnitudeChange}
                 min="0"
                 step="0.1"
+                required
                 className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 placeholder="Load intensity"
               />
