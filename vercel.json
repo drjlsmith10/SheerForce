@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd sheerforce-app && npm install && npm run build",
+  "outputDirectory": "sheerforce-app/dist",
+  "installCommand": "cd sheerforce-app && npm install",
+  "devCommand": "cd sheerforce-app && npm run dev",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
