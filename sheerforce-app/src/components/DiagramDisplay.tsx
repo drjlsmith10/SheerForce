@@ -23,8 +23,6 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
       line: {
         color,
         width: 3,
-        shape: 'spline',
-        smoothing: 0.3
       },
       fill: 'tozeroy',
       fillcolor: color + '25',
@@ -33,12 +31,12 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
     const layout = {
       title: {
         text: title,
-        font: { size: 18, family: 'system-ui, sans-serif', weight: 700, color: '#1f2937' },
+        font: { size: 18, family: 'system-ui, sans-serif', color: '#1f2937' },
       },
       xaxis: {
         title: {
           text: 'Position (m)',
-          font: { size: 13, weight: 600, color: '#4b5563' }
+          font: { size: 13, color: '#4b5563', family: 'system-ui, sans-serif' }
         },
         gridcolor: '#e5e7eb',
         zeroline: true,
@@ -50,7 +48,7 @@ export function DiagramDisplay({ title, data, yAxisLabel, color = '#3b82f6' }: D
       yaxis: {
         title: {
           text: yAxisLabel,
-          font: { size: 13, weight: 600, color: '#4b5563' }
+          font: { size: 13, color: '#4b5563', family: 'system-ui, sans-serif' }
         },
         gridcolor: '#e5e7eb',
         zeroline: true,
