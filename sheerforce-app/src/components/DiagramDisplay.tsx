@@ -8,9 +8,10 @@ interface DiagramDisplayProps {
   xAxisLabel: string;
   yAxisLabel: string;
   color?: string;
+  id?: string;  // ID for PDF export
 }
 
-export function DiagramDisplay({ title, data, xAxisLabel, yAxisLabel, color = '#3b82f6' }: DiagramDisplayProps) {
+export function DiagramDisplay({ title, data, xAxisLabel, yAxisLabel, color = '#3b82f6', id }: DiagramDisplayProps) {
   const plotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -87,7 +88,7 @@ export function DiagramDisplay({ title, data, xAxisLabel, yAxisLabel, color = '#
 
   return (
     <div className="w-full bg-white rounded-xl shadow-lg p-5 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-      <div ref={plotRef} className="w-full h-80 md:h-96" />
+      <div ref={plotRef} id={id} className="w-full h-80 md:h-96" />
     </div>
   );
 }

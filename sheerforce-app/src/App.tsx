@@ -7,6 +7,7 @@ import { CalculationSteps } from './components/CalculationSteps';
 import { CriticalPointsTable } from './components/CriticalPointsTable';
 import { ValidationReport } from './components/ValidationReport';
 import { EngineeringWarnings } from './components/EngineeringWarnings';
+import { ExportButton } from './components/ExportButton';
 import { analyzeBeam } from './lib/beamAnalysis';
 
 function App() {
@@ -142,8 +143,18 @@ function App() {
 
           {/* Right Column - Results */}
           <div className="space-y-5">
-            {results && (
+            {results && beam && (
               <>
+                {/* Export Button */}
+                <div className="flex justify-end">
+                  <ExportButton
+                    beam={beam}
+                    results={results}
+                    trace={results.calculationTrace || { steps: [], summary: '' }}
+                    criticalPoints={results.criticalPoints?.points || []}
+                  />
+                </div>
+
                 {/* Reactions Summary */}
                 <div className="bg-white rounded-xl shadow-lg p-5 md:p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
                   <div className="flex items-center gap-2.5 mb-5">
@@ -215,6 +226,7 @@ function App() {
         {results && (
           <div className="space-y-6 animate-fadeIn">
             <DiagramDisplay
+              id="shear-diagram"
               title="Shear Force Diagram"
               data={results.shearForce}
               xAxisLabel={`Position (${unitLabel})`}
@@ -222,6 +234,7 @@ function App() {
               color="#3b82f6"
             />
             <DiagramDisplay
+              id="moment-diagram"
               title="Bending Moment Diagram"
               data={results.bendingMoment}
               xAxisLabel={`Position (${unitLabel})`}
