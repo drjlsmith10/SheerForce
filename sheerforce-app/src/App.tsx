@@ -6,6 +6,7 @@ import { DiagramDisplay } from './components/DiagramDisplay';
 import { CalculationSteps } from './components/CalculationSteps';
 import { CriticalPointsTable } from './components/CriticalPointsTable';
 import { ValidationReport } from './components/ValidationReport';
+import { EngineeringWarnings } from './components/EngineeringWarnings';
 import { analyzeBeam } from './lib/beamAnalysis';
 
 function App() {
@@ -93,6 +94,10 @@ function App() {
                 beam={beam}
                 onLoadsChange={handleLoadsChange}
               />
+            )}
+
+            {beam && (
+              <EngineeringWarnings beam={beam} results={results} />
             )}
 
             {beam && beam.loads.length > 0 && (

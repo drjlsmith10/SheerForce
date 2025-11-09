@@ -8,6 +8,7 @@ interface BeamInputProps {
 export function BeamInput({ onBeamChange }: BeamInputProps) {
   const [length, setLength] = useState(10);
   const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
+  const [beamType, setBeamType] = useState<'simply-supported' | 'cantilever'>('simply-supported');
 
   const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -23,19 +24,33 @@ export function BeamInput({ onBeamChange }: BeamInputProps) {
       return;
     }
 
-    // Create a simply supported beam with default supports
-    const supports: Support[] = [
-      {
-        id: 'support-1',
-        position: 0,
-        type: 'pin',
-      },
-      {
-        id: 'support-2',
-        position: length,
-        type: 'roller',
-      },
-    ];
+    // Create supports based on beam type
+    let supports: Support[];
+
+    if (beamType === 'cantilever') {
+      // Cantilever beam: 1 fixed support at left end
+      supports = [
+        {
+          id: 'support-1',
+          position: 0,
+          type: 'fixed',
+        },
+      ];
+    } else {
+      // Simply supported beam: pin + roller at ends
+      supports = [
+        {
+          id: 'support-1',
+          position: 0,
+          type: 'pin',
+        },
+        {
+          id: 'support-2',
+          position: length,
+          type: 'roller',
+        },
+      ];
+    }
 
     const beam: Beam = {
       id: 'beam-1',
@@ -67,6 +82,42 @@ export function BeamInput({ onBeamChange }: BeamInputProps) {
         <h2 className="text-lg font-bold text-gray-900">Beam Configuration</h2>
       </div>
       <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Beam Type
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setBeamType('simply-supported')}
+              className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 text-sm font-semibold ${
+                beamType === 'simply-supported'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <span>Simply Supported</span>
+                <span className="text-xs opacity-75">Pin + Roller</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBeamType('cantilever')}
+              className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 text-sm font-semibold ${
+                beamType === 'cantilever'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <span>Cantilever</span>
+                <span className="text-xs opacity-75">Fixed End</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
         <div>
           <label htmlFor="length" className="block text-sm font-semibold text-gray-700 mb-2">
             Beam Length
@@ -107,7 +158,11 @@ export function BeamInput({ onBeamChange }: BeamInputProps) {
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <p className="text-sm text-blue-900 leading-relaxed">
-              Creates a simply supported beam with <strong>pin</strong> and <strong>roller</strong> supports at the ends.
+              {beamType === 'cantilever' ? (
+                <>Creates a cantilever beam with a <strong>fixed support</strong> at the left end. The fixed support provides vertical force, horizontal force, and moment reactions.</>
+              ) : (
+                <>Creates a simply supported beam with <strong>pin</strong> and <strong>roller</strong> supports at the ends.</>
+              )}
             </p>
           </div>
         </div>

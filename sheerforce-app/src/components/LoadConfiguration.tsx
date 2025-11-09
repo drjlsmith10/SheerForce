@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Load, PointLoad, DistributedLoad, Beam } from '../types/beam';
+import type { Load, PointLoad, DistributedLoad, MomentLoad, Beam } from '../types/beam';
 
 interface LoadConfigurationProps {
   beam: Beam;
@@ -7,11 +7,12 @@ interface LoadConfigurationProps {
 }
 
 export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProps) {
-  const [loadType, setLoadType] = useState<'point' | 'distributed'>('point');
+  const [loadType, setLoadType] = useState<'point' | 'distributed' | 'moment'>('point');
   const [position, setPosition] = useState(beam.length / 2);
   const [magnitude, setMagnitude] = useState(10);
   const [startPosition, setStartPosition] = useState(0);
   const [endPosition, setEndPosition] = useState(beam.length);
+  const [direction, setDirection] = useState<'clockwise' | 'counterclockwise'>('clockwise');
 
   const handlePositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -61,6 +62,16 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
         magnitude,
         angle: 0, // Vertical downward
       } as PointLoad;
+    } else if (loadType === 'moment') {
+      if (isNaN(position)) return;
+
+      newLoad = {
+        id: `load-${Date.now()}`,
+        type: 'moment',
+        position: Math.min(Math.max(position, 0), beam.length),
+        magnitude,
+        direction,
+      } as MomentLoad;
     } else {
       if (isNaN(startPosition) || isNaN(endPosition)) return;
       if (startPosition >= endPosition) return;
@@ -84,6 +95,7 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
 
   const unitLabel = beam.units === 'metric' ? 'kN' : 'kips';
   const distributedUnitLabel = beam.units === 'metric' ? 'kN/m' : 'kips/ft';
+  const momentUnitLabel = beam.units === 'metric' ? 'kN·m' : 'kip·ft';
   const lengthUnit = beam.units === 'metric' ? 'm' : 'ft';
 
   return (
@@ -112,11 +124,12 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
           </label>
           <select
             value={loadType}
-            onChange={(e) => setLoadType(e.target.value as 'point' | 'distributed')}
+            onChange={(e) => setLoadType(e.target.value as 'point' | 'distributed' | 'moment')}
             className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white transition-all"
           >
             <option value="point">Point Load</option>
             <option value="distributed">Distributed Load (Uniform)</option>
+            <option value="moment">Moment</option>
           </select>
         </div>
 
@@ -154,6 +167,71 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                 className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 placeholder="Force magnitude"
               />
+            </div>
+          </>
+        ) : loadType === 'moment' ? (
+          <>
+            <div>
+              <label htmlFor="momentPos" className="block text-sm font-semibold text-gray-700 mb-2">
+                Position ({lengthUnit})
+              </label>
+              <input
+                type="number"
+                id="momentPos"
+                value={position}
+                onChange={handlePositionChange}
+                min="0"
+                max={beam.length}
+                step="0.1"
+                required
+                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Position along beam"
+              />
+            </div>
+            <div>
+              <label htmlFor="momentMag" className="block text-sm font-semibold text-gray-700 mb-2">
+                Magnitude ({momentUnitLabel})
+              </label>
+              <input
+                type="number"
+                id="momentMag"
+                value={magnitude}
+                onChange={handleMagnitudeChange}
+                min="0"
+                step="0.1"
+                required
+                className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="Moment magnitude"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Direction
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDirection('clockwise')}
+                  className={`px-4 py-2.5 rounded-lg border-2 transition-all duration-200 text-sm font-semibold ${
+                    direction === 'clockwise'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-md'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                  }`}
+                >
+                  Clockwise ↻
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDirection('counterclockwise')}
+                  className={`px-4 py-2.5 rounded-lg border-2 transition-all duration-200 text-sm font-semibold ${
+                    direction === 'counterclockwise'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-md'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                  }`}
+                >
+                  Counter-CW ↺
+                </button>
+              </div>
             </div>
           </>
         ) : (
@@ -274,6 +352,13 @@ export function LoadConfiguration({ beam, onLoadsChange }: LoadConfigurationProp
                         <p className="font-bold text-purple-900 mb-1">Distributed Load</p>
                         <p className="text-gray-700 leading-relaxed">
                           <strong>{load.startMagnitude} {distributedUnitLabel}</strong> from <strong>{load.startPosition}</strong> to <strong>{load.endPosition} {lengthUnit}</strong>
+                        </p>
+                      </div>
+                    ) : load.type === 'moment' ? (
+                      <div>
+                        <p className="font-bold text-purple-900 mb-1">Moment</p>
+                        <p className="text-gray-700 leading-relaxed">
+                          <strong>{load.magnitude} {momentUnitLabel}</strong> {load.direction === 'clockwise' ? '↻' : '↺'} at <strong>{load.position} {lengthUnit}</strong>
                         </p>
                       </div>
                     ) : null}
