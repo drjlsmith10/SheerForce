@@ -6,20 +6,29 @@ import { generateReactionSteps } from './calculationTrace/reactionSteps';
 import { analyzeCriticalPoints } from './criticalPoints/analyzer';
 
 /**
- * Calculate reactions at supports for a simply supported beam
+ * Calculate reactions at supports
  * Uses equilibrium equations: ΣFy = 0, ΣM = 0
+ * Supports cantilever (1 fixed support) and simply supported (2 supports) beams
  */
 export function calculateReactions(beam: Beam): Reaction[] {
-  if (beam.supports.length < 2) {
-    throw new Error('Beam must have at least 2 supports');
+  if (beam.supports.length < 1) {
+    throw new Error('Beam must have at least 1 support');
   }
 
-  // For now, handle simply supported beam (2 supports)
+  // Cantilever beam (1 fixed support)
+  if (beam.supports.length === 1) {
+    if (beam.supports[0].type !== 'fixed') {
+      throw new Error('Cantilever beam must have a fixed support');
+    }
+    return calculateCantileverReactions(beam);
+  }
+
+  // Simply supported beam (2 supports)
   if (beam.supports.length === 2) {
     return calculateSimplySupportedReactions(beam);
   }
 
-  throw new Error('Currently only simply supported beams are implemented');
+  throw new Error('Currently only cantilever and simply supported beams are implemented');
 }
 
 /**
@@ -102,6 +111,90 @@ function calculateSimplySupportedReactions(beam: Beam): Reaction[] {
 }
 
 /**
+ * Calculate reactions for a cantilever beam (1 fixed support)
+ * Fixed support provides vertical force, horizontal force, and moment reactions
+ */
+function calculateCantileverReactions(beam: Beam): Reaction[] {
+  const support = beam.supports[0];
+
+  // Calculate total vertical load
+  let totalVerticalLoad = 0;
+  let totalMomentAboutSupport = 0;
+
+  beam.loads.forEach(load => {
+    if (load.type === 'point') {
+      const verticalComponent = load.magnitude * Math.cos(load.angle * Math.PI / 180);
+      totalVerticalLoad += verticalComponent;
+      totalMomentAboutSupport += verticalComponent * (load.position - support.position);
+    } else if (load.type === 'distributed') {
+      const length = load.endPosition - load.startPosition;
+
+      if (length === 0) {
+        // Treat as point load
+        totalVerticalLoad += load.startMagnitude;
+        totalMomentAboutSupport += load.startMagnitude * (load.startPosition - support.position);
+      } else {
+        // Calculate total load and its centroid
+        const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
+        const totalLoad = avgMagnitude * length;
+        const centroid = load.startPosition + length / 2;
+
+        totalVerticalLoad += totalLoad;
+        totalMomentAboutSupport += totalLoad * (centroid - support.position);
+      }
+    } else if (load.type === 'moment') {
+      // Applied moment contributes to reaction moment
+      totalMomentAboutSupport += load.direction === 'clockwise' ? -load.magnitude : load.magnitude;
+    }
+  });
+
+  // For cantilever, reaction force equals total load
+  // Reaction moment is calculated to satisfy moment equilibrium
+  // ΣM = 0: reaction_moment + reaction_force * position - Σ(load_moments) = 0
+  // Since totalMomentAboutSupport = Σ(load * distance from support),
+  // and for equilibrium about origin: V*x_support + M_reaction - Σ(load*x_load) = 0
+  // M_reaction = -V*x_support + Σ(load*x_load) = -totalMomentAboutSupport + totalVerticalLoad * support.position
+
+  // Simplified: For moments about the support, M_reaction = -totalMomentAboutSupport
+  // But for global equilibrium, we need: M_reaction = -(totalVerticalLoad * support.position - moment_from_loads_about_origin)
+
+  // Calculate moments about origin (x=0) for equilibrium check
+  let totalMomentAboutOrigin = 0;
+  beam.loads.forEach(load => {
+    if (load.type === 'point') {
+      const verticalComponent = load.magnitude * Math.cos(load.angle * Math.PI / 180);
+      totalMomentAboutOrigin += verticalComponent * load.position;
+    } else if (load.type === 'distributed') {
+      const length = load.endPosition - load.startPosition;
+      if (length === 0) {
+        totalMomentAboutOrigin += load.startMagnitude * load.startPosition;
+      } else {
+        const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
+        const totalLoad = avgMagnitude * length;
+        const centroid = load.startPosition + length / 2;
+        totalMomentAboutOrigin += totalLoad * centroid;
+      }
+    } else if (load.type === 'moment') {
+      totalMomentAboutOrigin += load.direction === 'clockwise' ? -load.magnitude : load.magnitude;
+    }
+  });
+
+  // For equilibrium about origin: V_reaction * x_support + M_reaction = totalMomentAboutOrigin
+  // M_reaction = totalMomentAboutOrigin - totalVerticalLoad * support.position
+  const reactionMoment = totalMomentAboutOrigin - totalVerticalLoad * support.position;
+
+  return [
+    {
+      supportId: support.id,
+      position: support.position,
+      verticalForce: totalVerticalLoad,
+      horizontalForce: 0, // Assuming no horizontal loads for now
+      moment: reactionMoment,
+    },
+  ];
+}
+
+/**
  * Calculate shear force diagram points
  */
 export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramPoint[] {
@@ -120,9 +213,14 @@ export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramP
     let shear = 0;
 
     // Add reactions (upward = positive)
+    // For cantilever beams, reactions at fixed supports are not included in internal shear
     reactions.forEach(reaction => {
       if (reaction.position <= x) {
-        shear += reaction.verticalForce;
+        // Only add reaction if it's not from a fixed support (fixed supports are external)
+        const support = beam.supports.find(s => s.id === reaction.supportId);
+        if (support && support.type !== 'fixed') {
+          shear += reaction.verticalForce;
+        }
       }
     });
 
@@ -143,9 +241,11 @@ export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramP
           }
         } else if (x >= load.startPosition && x <= load.endPosition) {
           const localX = x - load.startPosition;
-          const magnitude = load.startMagnitude +
+          // For distributed load, calculate total load from start to x
+          const magnitudeAtX = load.startMagnitude +
             (load.endMagnitude - load.startMagnitude) * localX / loadLength;
-          shear -= magnitude * localX;
+          const avgMagnitude = (load.startMagnitude + magnitudeAtX) / 2;
+          shear -= avgMagnitude * localX;
         } else if (x > load.endPosition) {
           const avgMagnitude = (load.startMagnitude + load.endMagnitude) / 2;
           shear -= avgMagnitude * loadLength;
@@ -178,8 +278,12 @@ export function calculateBendingMoment(beam: Beam, reactions: Reaction[]): Diagr
     let moment = 0;
 
     // Add moments from reactions
+    // For cantilever beams, reactions at fixed supports are not included in internal moment
     reactions.forEach(reaction => {
-      if (reaction.position <= x) {
+      const support = beam.supports.find(s => s.id === reaction.supportId);
+
+      if (reaction.position <= x && support && support.type !== 'fixed') {
+        // For non-fixed supports, add vertical force contribution
         moment += reaction.verticalForce * (x - reaction.position);
       }
     });
