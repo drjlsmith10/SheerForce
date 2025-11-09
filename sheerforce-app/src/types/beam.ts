@@ -1,5 +1,7 @@
 // Type definitions for beam analysis calculator
 
+import type { EquilibriumCheck, DiagramClosureCheck, RelationshipCheck } from '../lib/validation/types';
+
 export type SupportType = 'pin' | 'roller' | 'fixed';
 export type LoadType = 'point' | 'distributed' | 'moment';
 
@@ -63,6 +65,11 @@ export interface AnalysisResults {
   bendingMoment: DiagramPoint[];
   maxShear: { position: number; value: number };
   maxMoment: { position: number; value: number };
+  validation?: {
+    equilibrium?: EquilibriumCheck;
+    diagramClosure?: DiagramClosureCheck;
+    relationships?: RelationshipCheck;
+  };
 }
 
 export interface BeamState extends Beam {

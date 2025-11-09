@@ -1,4 +1,7 @@
 import type { Beam, Reaction, AnalysisResults, DiagramPoint } from '../types/beam';
+import { validateEquilibrium } from './validation/equilibriumValidator';
+import { validateDiagramClosure } from './validation/diagramValidator';
+import { validateRelationships } from './validation/relationshipValidator';
 
 /**
  * Calculate reactions at supports for a simply supported beam
@@ -214,11 +217,21 @@ export function analyzeBeam(beam: Beam): AnalysisResults {
     Math.abs(point.value) > Math.abs(max.value) ? point : max
   );
 
+  // Run all validations
+  const equilibrium = validateEquilibrium(beam, reactions);
+  const diagramClosure = validateDiagramClosure(beam, shearForce, bendingMoment);
+  const relationships = validateRelationships(beam, shearForce, bendingMoment);
+
   return {
     reactions,
     shearForce,
     bendingMoment,
     maxShear,
     maxMoment,
+    validation: {
+      equilibrium,
+      diagramClosure,
+      relationships,
+    },
   };
 }
