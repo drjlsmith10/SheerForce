@@ -1,6 +1,8 @@
 // Type definitions for beam analysis calculator
 
 import type { EquilibriumCheck, DiagramClosureCheck, RelationshipCheck } from '../lib/validation/types';
+import type { ReactionCalculationTrace } from '../lib/calculationTrace/types';
+import type { CriticalPointsAnalysis } from '../lib/criticalPoints/types';
 
 export type SupportType = 'pin' | 'roller' | 'fixed';
 export type LoadType = 'point' | 'distributed' | 'moment';
@@ -70,6 +72,8 @@ export interface AnalysisResults {
     diagramClosure?: DiagramClosureCheck;
     relationships?: RelationshipCheck;
   };
+  calculationTrace?: ReactionCalculationTrace;
+  criticalPoints?: CriticalPointsAnalysis;
 }
 
 export interface BeamState extends Beam {

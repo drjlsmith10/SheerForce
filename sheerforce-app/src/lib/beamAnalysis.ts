@@ -2,6 +2,8 @@ import type { Beam, Reaction, AnalysisResults, DiagramPoint } from '../types/bea
 import { validateEquilibrium } from './validation/equilibriumValidator';
 import { validateDiagramClosure } from './validation/diagramValidator';
 import { validateRelationships } from './validation/relationshipValidator';
+import { generateReactionSteps } from './calculationTrace/reactionSteps';
+import { analyzeCriticalPoints } from './criticalPoints/analyzer';
 
 /**
  * Calculate reactions at supports for a simply supported beam
@@ -52,6 +54,12 @@ function calculateSimplySupportedReactions(beam: Beam): Reaction[] {
 
   // Calculate reaction at second support
   const distance = support2.position - support1.position;
+
+  // Guard against division by zero (supports at same position)
+  if (Math.abs(distance) < 1e-10) {
+    throw new Error('Supports must not be at the same position');
+  }
+
   const reaction2 = totalMoment / distance;
 
   // Calculate reaction at first support (ΣFy = 0)
@@ -99,6 +107,12 @@ function calculateSimplySupportedReactions(beam: Beam): Reaction[] {
 export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramPoint[] {
   const points: DiagramPoint[] = [];
   const numPoints = 100; // Resolution of the diagram
+
+  // Guard against division by zero
+  if (beam.length <= 0) {
+    throw new Error('Beam length must be positive');
+  }
+
   const step = beam.length / (numPoints - 1);
 
   for (let i = 0; i < numPoints; i++) {
@@ -151,6 +165,12 @@ export function calculateShearForce(beam: Beam, reactions: Reaction[]): DiagramP
 export function calculateBendingMoment(beam: Beam, reactions: Reaction[]): DiagramPoint[] {
   const points: DiagramPoint[] = [];
   const numPoints = 100;
+
+  // Guard against division by zero
+  if (beam.length <= 0) {
+    throw new Error('Beam length must be positive');
+  }
+
   const step = beam.length / (numPoints - 1);
 
   for (let i = 0; i < numPoints; i++) {
@@ -222,6 +242,12 @@ export function analyzeBeam(beam: Beam): AnalysisResults {
   const diagramClosure = validateDiagramClosure(beam, shearForce, bendingMoment);
   const relationships = validateRelationships(beam, shearForce, bendingMoment);
 
+  // Generate calculation trace
+  const calculationTrace = generateReactionSteps(beam, reactions);
+
+  // Analyze critical points
+  const criticalPoints = analyzeCriticalPoints(beam, reactions, shearForce, bendingMoment);
+
   return {
     reactions,
     shearForce,
@@ -233,5 +259,7 @@ export function analyzeBeam(beam: Beam): AnalysisResults {
       diagramClosure,
       relationships,
     },
+    calculationTrace,
+    criticalPoints,
   };
 }

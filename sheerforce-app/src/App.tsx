@@ -3,6 +3,9 @@ import type { Beam, Load, AnalysisResults } from './types/beam';
 import { BeamInput } from './components/BeamInput';
 import { LoadConfiguration } from './components/LoadConfiguration';
 import { DiagramDisplay } from './components/DiagramDisplay';
+import { CalculationSteps } from './components/CalculationSteps';
+import { CriticalPointsTable } from './components/CriticalPointsTable';
+import { ValidationReport } from './components/ValidationReport';
 import { analyzeBeam } from './lib/beamAnalysis';
 
 function App() {
@@ -220,6 +223,21 @@ function App() {
               yAxisLabel={`Bending Moment (${momentUnit})`}
               color="#8b5cf6"
             />
+
+            {/* Validation Report */}
+            {results.validation && (
+              <ValidationReport results={results} units={beam?.units || 'metric'} />
+            )}
+
+            {/* Calculation Steps */}
+            {results.calculationTrace && (
+              <CalculationSteps trace={results.calculationTrace} />
+            )}
+
+            {/* Critical Points Table */}
+            {results.criticalPoints && (
+              <CriticalPointsTable analysis={results.criticalPoints} units={beam?.units || 'metric'} />
+            )}
           </div>
         )}
 
