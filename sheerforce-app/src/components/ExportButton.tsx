@@ -10,6 +10,7 @@ import type { ReactionCalculationTrace } from '../lib/calculationTrace/types';
 import type { CriticalPoint } from '../lib/criticalPoints/types';
 import { generatePDFReport } from '../lib/export/pdfGenerator';
 import type { PDFExportOptions } from '../lib/export/types';
+import { CSVExporter } from '../lib/export/csvExporter';
 
 interface ExportButtonProps {
   beam: Beam;
@@ -20,12 +21,17 @@ interface ExportButtonProps {
 
 export function ExportButton({ beam, results, trace, criticalPoints }: ExportButtonProps) {
   const [showOptions, setShowOptions] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportOptions, setExportOptions] = useState<Partial<PDFExportOptions>>({
     projectName: '',
     engineer: '',
     company: '',
   });
+
+  const unitLabel = beam.units === 'metric' ? 'm' : 'ft';
+  const forceUnit = beam.units === 'metric' ? 'kN' : 'kips';
+  const momentUnit = beam.units === 'metric' ? 'kN·m' : 'kip·ft';
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -83,13 +89,46 @@ export function ExportButton({ beam, results, trace, criticalPoints }: ExportBut
     }
   };
 
+  const handleExportShearCSV = () => {
+    CSVExporter.exportShearForce(results.shearForce, unitLabel, forceUnit);
+    setShowExportMenu(false);
+  };
+
+  const handleExportMomentCSV = () => {
+    CSVExporter.exportBendingMoment(results.bendingMoment, unitLabel, momentUnit);
+    setShowExportMenu(false);
+  };
+
+  const handleExportReactionsCSV = () => {
+    CSVExporter.exportReactions(results.reactions, unitLabel, forceUnit, momentUnit);
+    setShowExportMenu(false);
+  };
+
+  const handleExportCriticalPointsCSV = () => {
+    CSVExporter.exportCriticalPoints(criticalPoints, unitLabel, forceUnit, momentUnit);
+    setShowExportMenu(false);
+  };
+
+  const handleExportAllCSV = () => {
+    CSVExporter.exportAll(
+      results.shearForce,
+      results.bendingMoment,
+      results.reactions,
+      criticalPoints,
+      unitLabel,
+      forceUnit,
+      momentUnit
+    );
+    setShowExportMenu(false);
+  };
+
   return (
     <div className="relative">
       <div className="flex gap-2">
         <button
           onClick={handleQuickExport}
           disabled={isExporting}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-colors font-semibold shadow-md hover:shadow-lg"
         >
           {isExporting ? (
             <>
@@ -98,7 +137,10 @@ export function ExportButton({ beam, results, trace, criticalPoints }: ExportBut
             </>
           ) : (
             <>
-              📄 Export PDF
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Export PDF
             </>
           )}
         </button>
@@ -106,11 +148,105 @@ export function ExportButton({ beam, results, trace, criticalPoints }: ExportBut
         <button
           onClick={() => setShowOptions(!showOptions)}
           disabled={isExporting}
-          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg"
           title="PDF Export Options"
         >
-          ⚙️
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
         </button>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowExportMenu(!showExportMenu)}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 font-semibold shadow-md hover:shadow-lg"
+          >
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export CSV
+          </button>
+
+          {showExportMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowExportMenu(false)}
+              />
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 z-20 overflow-hidden">
+                <div className="py-2">
+                  <button
+                    onClick={handleExportShearCSV}
+                    className="w-full px-4 py-2.5 text-left hover:bg-blue-50 flex items-center gap-3 transition-colors"
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-blue-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">Shear Force Diagram</div>
+                      <div className="text-xs text-gray-500">Position vs. Shear Force</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={handleExportMomentCSV}
+                    className="w-full px-4 py-2.5 text-left hover:bg-purple-50 flex items-center gap-3 transition-colors"
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-purple-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">Bending Moment Diagram</div>
+                      <div className="text-xs text-gray-500">Position vs. Moment</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={handleExportReactionsCSV}
+                    className="w-full px-4 py-2.5 text-left hover:bg-emerald-50 flex items-center gap-3 transition-colors"
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-emerald-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">Support Reactions</div>
+                      <div className="text-xs text-gray-500">Forces and moments</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={handleExportCriticalPointsCSV}
+                    className="w-full px-4 py-2.5 text-left hover:bg-amber-50 flex items-center gap-3 transition-colors"
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-amber-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">Critical Points</div>
+                      <div className="text-xs text-gray-500">Key values and locations</div>
+                    </div>
+                  </button>
+
+                  <div className="border-t border-gray-200 my-2"></div>
+
+                  <button
+                    onClick={handleExportAllCSV}
+                    className="w-full px-4 py-2.5 text-left hover:bg-indigo-50 flex items-center gap-3 transition-colors font-semibold"
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-indigo-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                    </svg>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">Export All Data</div>
+                      <div className="text-xs text-gray-500">Complete analysis in one file</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Export Options Modal */}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Beam, Load, AnalysisResults } from './types/beam';
 import { BeamInput } from './components/BeamInput';
 import { LoadConfiguration } from './components/LoadConfiguration';
@@ -8,12 +8,23 @@ import { CriticalPointsTable } from './components/CriticalPointsTable';
 import { ValidationReport } from './components/ValidationReport';
 import { EngineeringWarnings } from './components/EngineeringWarnings';
 import { ExportButton } from './components/ExportButton';
+import { SaveLoadPanel } from './components/SaveLoadPanel';
+import { AutoSaveIndicator } from './components/AutoSaveIndicator';
+import { TemplateSelector } from './components/TemplateSelector';
+import { ShortcutsHelp } from './components/ShortcutsHelp';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { analyzeBeam } from './lib/beamAnalysis';
 
 function App() {
   const [beam, setBeam] = useState<Beam | null>(null);
   const [results, setResults] = useState<AnalysisResults | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  // Refs to trigger actions from keyboard shortcuts
+  const saveButtonRef = useRef<(() => void) | null>(null);
+  const loadButtonRef = useRef<(() => void) | null>(null);
+  const exportButtonRef = useRef<(() => void) | null>(null);
 
   const handleBeamChange = (newBeam: Beam) => {
     setBeam(newBeam);
@@ -47,6 +58,27 @@ function App() {
     }
   };
 
+  const handleNewBeam = () => {
+    if (confirm('Are you sure you want to start a new beam? Any unsaved changes will be lost.')) {
+      setBeam(null);
+      setResults(null);
+      setError(null);
+    }
+  };
+
+  // Keyboard shortcuts handlers
+  useKeyboardShortcuts({
+    onSave: () => saveButtonRef.current?.(),
+    onLoad: () => loadButtonRef.current?.(),
+    onExport: () => exportButtonRef.current?.(),
+    onNew: handleNewBeam,
+    onCalculate: handleCalculate,
+    onShowShortcuts: () => setShowShortcuts(true),
+    // Undo/Redo will be implemented in next iteration
+    onUndo: () => console.log('Undo not yet implemented'),
+    onRedo: () => console.log('Redo not yet implemented'),
+  });
+
   const unitLabel = beam?.units === 'metric' ? 'm' : 'ft';
   const forceUnit = beam?.units === 'metric' ? 'kN' : 'kips';
   const momentUnit = beam?.units === 'metric' ? 'kN·m' : 'kip·ft';
@@ -55,33 +87,45 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 max-w-7xl">
         {/* Header */}
-        <header className="text-center mb-8 md:mb-10">
-          <div className="inline-flex items-center justify-center gap-3 mb-3">
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
-              <svg
-                className="text-white"
-                width="28"
-                height="28"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                style={{ display: 'block' }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              </svg>
+        <header className="mb-8 md:mb-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
+                <svg
+                  className="text-white"
+                  width="28"
+                  height="28"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  style={{ display: 'block' }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                  SheerForce
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Professional Shear Force & Bending Moment Calculator
+                </p>
+              </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-              SheerForce
-            </h1>
+
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex gap-2">
+                <TemplateSelector onSelectTemplate={handleBeamChange} />
+                <SaveLoadPanel beam={beam} onLoadBeam={handleBeamChange} />
+              </div>
+              <AutoSaveIndicator beam={beam} onRestoreAutoSave={handleBeamChange} />
+            </div>
           </div>
-          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
-            Professional Shear Force & Bending Moment Calculator
-          </p>
         </header>
 
         {/* Main Content */}
@@ -261,14 +305,32 @@ function App() {
 
         {/* Footer */}
         <footer className="mt-10 md:mt-12 text-center">
-          <div className="inline-flex items-center gap-2 text-xs text-gray-500 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full">
-            <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style={{ display: 'block' }}>
-              <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-            <span>Built with React + TypeScript + Vite + Plotly.js</span>
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => setShowShortcuts(true)}
+              className="inline-flex items-center gap-2 text-xs text-gray-600 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-white hover:shadow-md transition-all duration-200 border border-gray-200"
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span className="font-semibold">Keyboard Shortcuts</span>
+              <kbd className="px-1.5 py-0.5 bg-gray-200 border border-gray-300 rounded text-xs font-mono">
+                Ctrl + /
+              </kbd>
+            </button>
+
+            <div className="inline-flex items-center gap-2 text-xs text-gray-500 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20" style={{ display: 'block' }}>
+                <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              <span>Built with React + TypeScript + Vite + Plotly.js</span>
+            </div>
           </div>
         </footer>
       </div>
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <ShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 }
